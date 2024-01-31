@@ -1,71 +1,134 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome to Pavon AI!</title>
-    <style>
-        body {
-            background-color: #0000FF;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        #chatbox {
-            height: 500px;
-            width: 500px;
-            overflow-y: scroll;
-            resize: none;
-        }
-        #user_input {
-            width: 400px;
-            margin-top: 10px;
-        }
-        #send_button {
-            margin-top: 10px;
-        }
-    </style>
+  <title>Welcome to PavonAI!</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+  <style>
+    /* Box styling */
+    #question {
+      border: 2px solid #ccc;
+      border-radius: 10px; /* Round edges */
+      padding: 15px;
+      margin-top: 20px;
+      width: 100%;
+      resize: none; /* Disable resizing */
+      overflow: auto; /* Allow scrolling when text overflows */
+      white-space: normal; /* Allow text wrapping */
+      font-size: 16px; /* Set font size */
+      font-family: Arial, sans-serif; /* Set font family */
+    }
+
+    .answer-box {
+      border: 2px solid #ccc;
+      border-radius: 10px; /* Round edges */
+      padding: 15px;
+      margin-top: 20px;
+      width: 50%; /* Modified width for answer box */
+      resize: none; /* Disable resizing */
+      overflow: auto; /* Allow scrolling when text overflows */
+      white-space: normal; /* Allow text wrapping */
+      font-size: 16px; /* Set font size */
+      font-family: Arial, sans-serif; /* Set font family */
+    }
+
+    /* Styling for the buttons */
+    button[type="submit"],
+    button.clear-btn {
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 80px;
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    /* Styling for the loading bar */
+    .loading-bar {
+      display: none; /* Initially hidden */
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0; /* Cover the full viewport */
+      background-color: rgba(0,0,0,0.7); /* Semi-transparent black */
+      z-index: 1000;
+      font-size: 20px;
+      color: white;
+      text-align: center;
+      padding-top: 20%;
+   }
+
+    .loading-content {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+      background-color: rgba(255,255,255,0.2);
+   }
+
+    .loading-animation {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid white;
+      border-radius: 50%;
+      border-top: 3px solid transparent;
+      animation: spin 1s linear infinite;
+   }
+
+   @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+   }
+  </style>
+
+  </style>
 </head>
-<center><body>
-    <h1>Welcome to Pavon AI!</h1>
-    <center><img src="{{ url_for('static', filename='PavonAI/pavon.png') }}" alt="Logo" style="width: 200px; height: 200px;"></center>
-    <textarea id="chatbox" readonly></textarea>
-    <center><input type="text" id="user_input"></center>
-    <button id="send_button">Send</button>
-    <button id="clear_button">Clear</button>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#send_button').click(function() {
-                var user_input = $('#user_input').val();
-                if (user_input.trim() !== '') {
-                    $.ajax({
-                        url: '/chat',
-                        type: 'POST',
-                        data: {user_input: user_input},
-                        success: function(response) {
-                            $('#chatbox').val($('#chatbox').val() + 'YOU: ' + user_input + '\n\n');
-                            $('#chatbox').val($('#chatbox').val() + 'PAVON AI: ' + response + '\n\n');
-                            $('#user_input').val('');
-                            $('#user_input').focus();
-                            $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
-                        }
-                    });
-                }
-            });
+<body>
+  <h1>Welcome to PavonAI!</h1>
+  <center>
+  <div id="loadingBar" class="loading-bar">
+  <div class="loading-content">
+    <div class="loading-animation"></div>
+    PavonAI is thinking...
+  </div>
+  </div>
+  <center><img src="{{ url_for('static', filename='pavon.png') }}" alt="Logo" width="300" height="300"></center>
+  <br>
+  <form action="/" method="post">
+    <b><label for="question">Ask PavonAI A Question:</label><br></b>
+    <textarea id="question" name="question" placeholder="Ask me a question, please." rows="5" required></textarea><br>
+    <center><button type="submit">Ask PavonAI</button></center><br>
+  </form>
+  </center>
 
-            $('#user_input').keypress(function(e) {
-                if (e.which === 13) {
-                    $('#send_button').click();
-                    return false;
-                }
-            });
+  {% if question %}
+  <h2>Your Question to PavonAI:</h2>
+  <p><b>{{ question }}</b></p>
+  {% endif %}
 
-            $('#clear_button').click(function() {
-                $('#chatbox').val('');
-            });
+  {% if answer %}
+  <div class="answer-box">
+    <h2>PavonAI's Answer:</h2>
+    <p>{{ answer }}</p>
+  </div>
+  {% endif %}
 
-        });
-    </script>
+  <script>
+    function clearAnswerBox() {
+      var answerBox = document.querySelector('.answer-box');
+      if (answerBox) {
+        answerBox.innerHTML = '';
+      }
+    }
+    document.querySelector('form').addEventListener('submit', function() {
+      document.getElementById('loadingBar').style.display = 'block';
+    });
+  </script>
+  <br>
+  <footer>
+        <p>&copy; 2023 PavonAI. Please not that PavonAI may give incorrect information, so it is best to do thorough research on the answers PavonAI provides to you.</p>
+        <p>PavonAI was developed and is maintained by <a href="https://linkedin.com/in/pavondunbar">Pavon Dunbar.</a></p>
+    </footer>
 </body>
-</center>
 </html>
 
